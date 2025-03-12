@@ -1,0 +1,58 @@
+server:
+  port: 5000
+  
+spring:
+  application:
+    name: omniapi
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/omnihub
+    username: omniapi
+    password: VQbWPrG4er4yPJ52
+  tomcat:
+      initial-size: 10
+      max-active: 100
+      min-idle: 10
+      max-idle: 50
+      suspect-timeout: 60
+      time-between-eviction-runs-millis: 30000
+      min-evictable-idle-time-millis: 60000
+      validation-query: SELECT 1
+      validation-interval: 30000
+      remove-abandoned: true
+      remove-abandoned-timeout: 60
+      log-abandoned: true    
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        format_sql: true
+        jdbc:
+          batch_size: 10
+    show-sql: true
+    
+management:
+  context-path: /internal-management
+  
+security:
+  user:
+    name: omniapiuser
+    password: un7brGbGH76XwCuJ
+
+# Here begins the omniapi specific properties.
+
+omniapi:
+  authorisation:
+    expiration-enabled: true    # true|false to expire incoming requests (mitigate against replay attacks)
+    expiration-timeout: 60000   # in milliseconds (ie. 60 seconds)
+  crypto:
+    auth-access-key:  # AWS IAM access key
+    auth-secret-key:  # AWS IAM secret key
+    kms-cmk-region: us-east-1                                                               # Key region
+    kms-cmk-id: arn:aws:kms:us-east-1:294254383015:key/73e8747d-622a-4e52-a522-424a544ec7f8 # Key ARN
+    kms-data-key-alg: AES       # key algorithm
+    kms-data-key-spec: AES_128  # key algorithm spec
+  payment:
+    gateway-force-simulation: false  # true|false to force all transactions to use the simulator
+    
+    
