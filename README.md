@@ -1,6 +1,11 @@
-omniapi
---------
-When deploying to production in AWS (via Elastic Beanstalk), the following SOFTWARE parameter(s) will need to be set.
+swipepay-omniapi
+----------------
+An Omni API that allows SwipePay customers to perform a variety of e-commerce payment gateway functions. These include:
+1. Managing bank accounts (Add, Edit, Get, List, Lookup)
+2. Managing credit cards (Add, Edit, Get, List, Lookup) - tokenization capabilities
+3. Crypto services (Generate key, Encrypt, Decrypt)
+4. Manage customer information (Add, Edit, Get, List)
+5. Perform transaction payments (ccPayment, ccPreAuth, ccRefund, ccQuery)
 
 If using MySQL Aurora,
 NOTE: Aurora supports distributed READ/WRITE nodes and Multi AZ failover
