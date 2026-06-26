@@ -1,84 +1,65 @@
-swipepay-omniapi
-----------------
-An Omni API that allows SwipePay customers to perform a variety of e-commerce payment gateway functions. These include:
-1. Managing bank accounts (Add, Edit, Get, List, Lookup)
-2. Managing credit cards (Add, Edit, Get, List, Lookup) - tokenization capabilities
-3. Crypto services (Generate key, Encrypt, Decrypt)
-4. Manage customer information (Add, Edit, Get, List)
-5. Perform transaction payments (ccPayment, ccPreAuth, ccRefund, ccQuery)
+# SwipePay
 
-If using MySQL Aurora,
-NOTE: Aurora supports distributed READ/WRITE nodes and Multi AZ failover
-
-SPRING_DATASOURCE_URL = jdbc:mariadb:aurora://<CLUSTER_ENDPOINT>:3306/omnihub
-
-If using MariaDB RDS,
-NOTE: RDS supports Single AZ or Multi AZ failover
-
-SPRING_DATASOURCE_URL = jdbc:mariadb://<RDS_DNS_ENDPOINT>:3306/omnihub
-
-
-
-----------
-PRODUCTION
-----------
-OMNIAPI_CRYPTO_AUTH-ACCESS-KEY = 
-OMNIAPI_CRYPTO_AUTH-SECRET-KEY = 
-OMNIAPI_CRYPTO_KMS-CMK-REGION = us-west-2
-OMNIAPI_CRYPTO_KMS-CMK-ID = arn:aws:kms:us-west-2:<AWS_ACCOUNT_ID>:key/<KMS_KEY_ID>
-
------------
-DEVELOPMENT
------------
-OMNIAPI_CRYPTO_AUTH-ACCESS-KEY = 
-OMNIAPI_CRYPTO_AUTH-SECRET-KEY = 
-OMNIAPI_CRYPTO_KMS-CMK-REGION = us-east-1
-OMNIAPI_CRYPTO_KMS-CMK-ID = arn:aws:kms:us-east-1:<AWS_ACCOUNT_ID>:key/<KMS_KEY_ID>
-OMNIAPI_PAYMENT_GATEWAY-FORCE-SIMULATION = true
+SwipePay is a full-stack fintech platform built as a personal project to prototype a commercial-grade payment processing and crypto wallet ecosystem. It covers two product surfaces: a merchant-facing payment gateway and a consumer-facing mobile wallet that supports bill payment via digital currency.
 
 ---
-SIT
+
+## Architecture
+
+```
+MERCHANT SURFACE
+┌─────────────────────┐     ┌─────────────────────┐
+│  swipepay-          │────▶│  swipepay-omniapi   │
+│  client-desk        │     │  (payment gateway   │
+│  (merchant portal)  │     │   API)              │
+└─────────────────────┘     └────────┬────────────┘
+                                      │
+                          ┌───────────▼───────────┐
+                          │  swipepay-crypto-     │
+                          │  service              │
+                          │  (AWS KMS encryption) │
+                          └───────────┬───────────┘
+                                      │
+                          ┌───────────▼───────────┐
+                          │  swipepay-crypto-lib  │
+                          │  (KMS client library) │
+                          └───────────────────────┘
+
+CONSUMER SURFACE
+┌─────────────────────┐     ┌─────────────────────┐
+│  swipepay-wallet-   │────▶│  swipepay-wallet-   │
+│  mobile-app         │     │  api                │
+│  (React Native)     │     │  (bills + crypto    │
+└─────────────────────┘     │   payments API)     │
+                             └─────────────────────┘
+```
+
 ---
-OMNIAPI_CRYPTO_AUTH-ACCESS-KEY = 
-OMNIAPI_CRYPTO_AUTH-SECRET-KEY = 
-OMNIAPI_CRYPTO_KMS-CMK-REGION = us-east-2
-OMNIAPI_CRYPTO_KMS-CMK-ID = arn:aws:kms:us-east-2:<AWS_ACCOUNT_ID>:key/<KMS_KEY_ID>
-OMNIAPI_PAYMENT_GATEWAY-FORCE-SIMULATION = true
 
--------
-STAGING
--------
-OMNIAPI_CRYPTO_AUTH-ACCESS-KEY = 
-OMNIAPI_CRYPTO_AUTH-SECRET-KEY = 
-OMNIAPI_CRYPTO_KMS-CMK-REGION = us-west-2
-OMNIAPI_CRYPTO_KMS-CMK-ID = arn:aws:kms:us-west-2:<AWS_ACCOUNT_ID>:key/<KMS_KEY_ID>
-OMNIAPI_PAYMENT_GATEWAY-FORCE-SIMULATION = true
+## Services
 
+| Repository | Description |
+|---|---|
+| [swipepay-omniapi](https://github.com/stevekatsaras/swipepay-omniapi) | Core payment gateway API. Supports bank account and credit card management (with tokenisation), customer management, and transaction processing (payment, pre-auth, refund, query). Backed by MySQL Aurora with distributed read/write nodes. |
+| [swipepay-crypto-service](https://github.com/stevekatsaras/swipepay-crypto-service) | Microservice for cryptographic operations — key generation and data encryption/decryption — backed by AWS Key Management Service (KMS). Used to secure sensitive payment data across the platform. |
+| [swipepay-crypto-lib](https://github.com/stevekatsaras/swipepay-crypto-lib) | Shared Java library encapsulating AWS KMS connectivity. Used internally by `swipepay-crypto-service`. |
+| [swipepay-client-desk](https://github.com/stevekatsaras/swipepay-client-desk) | Merchant-facing management portal. Allows merchants to manage their account, view transactions, and administer billing. Integrates with `swipepay-crypto-service` for data protection. |
+| [swipepay-wallet-api](https://github.com/stevekatsaras/swipepay-wallet-api) | REST API for the consumer wallet app. Manages user bills and utilities, and supports payment via digital currency by integrating with crypto networks and exchanges. |
+| [swipepay-wallet-mobile-app](https://github.com/stevekatsaras/swipepay-wallet-mobile-app) | React Native mobile app for consumers. Allows users to manage bills and utilities and pay them using digital currency. Communicates exclusively with `swipepay-wallet-api`. |
 
+---
 
+## Tech Stack
 
+- **Languages:** Java (Spring Boot), JavaScript (React Native)
+- **Payment Processing:** Credit card tokenisation, pre-auth, refund flows
+- **Cryptography:** AWS Key Management Service (KMS), AES-128 encryption
+- **Database:** MariaDB / MySQL Aurora (with replication and Multi-AZ failover)
+- **Mobile:** React Native 0.59, React Navigation
+- **Infrastructure:** AWS (RDS, KMS, ECS)
 
+---
 
-TODO
-----
-fix the status codes (properly)
+## Status
 
-repair the payments API (may need refactoring)
-payment/preauth - pay by customer
-payment/preauth - tokenise on successful tx
-
-explore periodic/triggered payments (securepay docs)
-
-copy omnihub.io hosted zone from swipepay to omnihub
-buy cheap domain for omnihub-sanbox
-inspect ssl certs for omnihub.io
-
-simulator - how to simulate a timeout ???
-caching merchant data (update every so often)
-fraudguard rules
-batch payments
-
-audit trail
-email merchant/cardholder option
-2 factor auth - setting on the merchant against the cardholder!
-error handling of api calls downstream
+Personal prototype project. Core payment gateway and wallet API are implemented end-to-end. Crypto payment integration in the wallet is a work in progress. Not in production.
